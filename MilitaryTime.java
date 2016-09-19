@@ -4,11 +4,11 @@ public class MilitaryTime {
   public static final int SECONDS_IN_AN_HOUR = 3600;
 
   public static void main( String args[] ) {
-    System.out.println("Enter your first number: ");
+    System.out.println("Enter first time: ");
     Scanner scanner = new Scanner(System.in);
     int firstNumber = scanner.nextInt();
 
-    System.out.println("Enter your second number: ");
+    System.out.println("Enter second time: ");
     int secondNumber = scanner.nextInt();
 
     System.out.println("These times subtracted: " + convertDifferenceToMilitaryTime(subtractTimes(firstNumber, secondNumber)));
