@@ -1,62 +1,74 @@
 import java.util.*;
 
 public class PostfixCalculator {
+  ArrayStack<Double> stack = new ArrayStack<Double>();
+
   public static void main(String [] args) {
     Scanner scanner = new Scanner(System.in);
 
     System.out.println("Type your infix expression: ");
     String expression = scanner.next();
-
     Converter converter = new Converter();
-    String postFixExpression = converter.toPostFix(expression);
+    String postFixExpression = converter.toPostFix(expression.toCharArray());
 
-    System.out.println("Converted to postfix: " + postFixExpression.replaceAll("", " "));
-    System.out.println("Answer is: " + calculate(postFixExpression));
+    PostfixCalculator calc = new PostfixCalculator();
+    System.out.println("Converted to postfix: " + postFixExpression);
+    System.out.println("Answer is: " + calc.calculate(postFixExpression));
   }
 
-  private static Double calculate(String postFixExpression) {
-    Double result = 0.0;
-    Double operand1;
-    Double operand2;
-    Stack<String> stack = new Stack<String>();
+  private double calculate(String postFixExpression) {
+    double result = 0.0;
+    double operand1;
+    double operand2;
 
-    for (int i = 0; i < postFixExpression.length(); i++) {
-      String[] elements = postFixExpression.split("");
-      String element = elements[i];
+    String[] elements = postFixExpression.split(" ");
+    List<String> list = new ArrayList<String>(Arrays.asList(elements));
+    list.removeAll(Arrays.asList("", null));
+
+    for (int i = 0; i < list.size(); i++) {
+      String element = list.get(i);
       String[] operators = { "^", "*", "/", "+", "-" };
 
       if(!(Arrays.asList(operators).contains(element))) {
-        stack.push(element);
+        try {
+          this.stack.push(Double.parseDouble(element));
+        } catch(StackOverflowException e){
+          System.err.println(e);
+        }
       } else {
-        operand1 = Double.valueOf("" + stack.pop());
-        operand2 = Double.valueOf("" + stack.pop());
+        operand2 = this.stack.top();
+        stack.pop();
+        operand1 = this.stack.top();
+        stack.pop();
 
         switch (element) {
           case "+":
-            stack.push(Double.toString(operand1 + operand2));
+            result = operand1 + operand2;
             break;
           case "-":
-            stack.push(Double.toString(operand1 - operand2));
+            result = operand1 - operand2;
             break;
           case "*":
-            stack.push(Double.toString(operand1 * operand2));
+            result = operand1 * operand2;
             break;
           case "/":
-            stack.push(Double.toString(operand1 / operand2));
+            result = operand1 / operand2;
             break;
           case "^":
-            stack.push(Double.toString(Math.pow(operand1, operand2)));
+            result = Math.pow(operand1, operand2);
             break;
 
           default:
             System.out.println("Invalid operator!");
         }
+        try {
+          this.stack.push(result);
+        } catch(StackOverflowException e){
+          System.err.println(e);
+        }
       }
-
-      result = Double.valueOf("" + stack.pop());
-
-      return result;
     }
+    this.stack.pop();
     return result;
   }
 }

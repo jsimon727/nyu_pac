@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class ParserHelper {
-    private static List<String> parse(char[] input) {
+    public static List<String> parse(char[] input) {
       List<String> parsed = new ArrayList<String>();
       for (int i = 0; i < input.length; ++i) {
           char c = input[i];

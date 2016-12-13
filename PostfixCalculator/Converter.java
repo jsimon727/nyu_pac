@@ -3,7 +3,8 @@ import java.util.*;
 public class Converter {
   private String expression;
   private String output = "";
-  Stack<String> stack = new Stack<String>();
+  boolean operatorElement = true;
+  ArrayStack<String> stack = new ArrayStack<String>();
   private HashMap<String, Integer> operatorMap;
   final String[] operators = { "^", "*", "/", "+", "-" };
 
@@ -11,46 +12,63 @@ public class Converter {
     setOperators();
   }
 
-  public String toPostFix(String expression) {
-    String topOfStack;
-    String topOfStackOperator;
-
-    String[] expressionArray = expression.trim().split("");
-    for(int i=0; i < expressionArray.length; i++) {
-      String element = expressionArray[i];
+  public String toPostFix(char[] expression) {
+    List<String> expressionList = ParserHelper.parse(expression);
+    for(int i=0; i < expressionList.size(); i++) {
+      String element = expressionList.get(i);
 
       if(isOperator(element)) {
-        while(!stack.empty() && hasHigherPrecedence(stack.peek(), element)) {
-          output += stack.pop();
+        if(operatorElement) {
+          try {
+            stack.push(element);
+          } catch(StackOverflowException e){
+            System.err.println(e);
+          }
         }
-          stack.push(element);
+        else {
+          while(!stack.isEmpty() && !stack.top().equals("(") && hasPrecedence(stack.top(), element)) {
+            String op = stack.top();
+            stack.pop();
+            output += " " + op;
+          }
+          try {
+            stack.push(element);
+          } catch(StackOverflowException e){
+            System.err.println(e);
+          }
+        }
+        operatorElement = true;
       }
       else if(element.equals("(")) {
-        stack.push(element);
+        try {
+          stack.push(element);
+        } catch(StackOverflowException e){
+          System.err.println(e);
+        }
       }
       else if(element.equals(")")) {
-        while(!stack.empty() && !stack.peek().equals("(")) {
-          output += stack.pop();
-        }
-        if(!stack.empty()) {
+        String op;
+        while(!(op = stack.top()).equals("(")) {
+          output += " " + op;
           stack.pop();
         }
       }
       else {
-        output += element;
+        output += " " + element;
+        operatorElement = false;
       }
     }
 
+    while(!stack.isEmpty()) {
+      String op = stack.top();
+      output += " " + op;
+      stack.pop();
+    }
     return output.replaceAll("[()]","");
   }
 
-  private boolean hasHigherPrecedence(String topOfStackElement, String element)  {
-    if(topOfStackElement.equals("(") || topOfStackElement.equals(")") || element.equals("(") || topOfStackElement.equals(")")) {
-      return true;
-    }
-    else {
-      return operatorMap.get(topOfStackElement) > operatorMap.get(element);
-    }
+  private boolean hasPrecedence(String topOfStackElement, String element)  {
+    return operatorMap.get(topOfStackElement) >= operatorMap.get(element);
   }
 
   private boolean isOperator(String element) {
@@ -59,25 +77,11 @@ public class Converter {
 
   private void setOperators() {
     operatorMap = new HashMap<String, Integer>();
-    operatorMap.put("^", 1);
+    operatorMap.put("^", 3);
     operatorMap.put("*", 2);
     operatorMap.put("/", 2);
-    operatorMap.put("+", 3);
-    operatorMap.put("-", 3);
+    operatorMap.put("+", 1);
+    operatorMap.put("-", 1);
     this.operatorMap = operatorMap;
   }
-
-  // public String pop() throws StackUnderflowException {
-    // if(this.stack.empty()) {
-      // throw new StackUnderflowException("There are no items in the Stack");
-    // }
-    // super();
-  // }
-
-  // public void push(String parameter) throws StackOverflowException {
-    // if(this.stack.empty()) {
-      // throw new StackOverflowException("The Stack is full and can no longer accept any more items");
-    // }
-    // super();
-  // }
 }
